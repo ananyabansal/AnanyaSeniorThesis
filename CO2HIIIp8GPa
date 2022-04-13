@@ -1,0 +1,287 @@
+% This is the control program for analyzing the 0K data for the filled-ice 
+% of CO2 (CO2H-III) producing the phase diagrams.
+Constants definitions
+k = 1.38.*10.^(-16);               %Boltzmann's constant [erg K^{-1}]
+NA = 6.0221409.*10.^23;            %Avogadro's number
+Unit conversion factors
+ergtoHa = 22937126887.7;           %Conversion of erg to Ha.
+Hatoerg = 4.359744650.*10.^(-11);  %Ha to erg
+HatoeV = 27.211386;                %Ha to eV
+HatokJ = 4.35974394220.*10.^(-21); %Ha to kJ
+% Converting the units of Boltzmann's constant
+kHa = k.*ergtoHa;                 %Boltzmann's constant [Ha K^{-1}]
+Molecular mass definitions
+H2O
+Mw = 18;       %Molar mass of water [g/mol].
+mH2O = Mw./NA; %The mass of a water molecule [g].
+% CO2
+MCO2 = 44;       %Molar mass of CO2 [g/mol].
+mCO2 = MCO2./NA; %The mass of a CO2 molecule [g].
+Unit cell lattice parameters
+% We have studied six compositions for the filled-ice. Index 1 is for
+% 29CO2, index 2 is for 30CO2 ....
+CompositionIndex = [1 2 3 4 5 6]; 
+% Lattice cell parameters [Angstrom]. These are the a,b,c parameters 
+% appearing in the output file following the geometry optimization successful 
+% completeion. Insert the cell parameters data from 
+% the output file below! The data is divided by 2 because we solved for the
+% super cell (2x2x2) and we divide by two to obtain the UNIT cell data.
+a = [9.615433  9.589136 9.690258 9.530554  9.628489 9.534110]./2;
+b = [14.684796 14.730997 14.724814 14.699504 15.628823 16.009930]./2;
+c = [19.824735 19.966561 19.945857 19.312313 19.952505 20.091303]./2;
+% plot the unit cell parameters versus cell composition
+figure(1);
+plot(CompositionIndex,a,'g','LineWidth',1.5)
+hold on
+plot(CompositionIndex,b,'b','LineWidth',1.5)
+plot(CompositionIndex,c,'r','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('supercell composition','FontSize',15)
+Ang = char(197); ylabel(['unit cell parameter [' Ang ']'],'FontSize',15)
+%ylabel('unit cell parameter $ [ \AA ]$  ' ,'Interpreter','latex','FontSize',15)
+title('Unit cell parameters V. supercell composition')
+legend('a','b','c')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+
+Unit cell volume
+% Insert here the volumes from the output files. The volume is in
+% [Angstrom^3]. We divide by eight to obtain the unit cell volume because 
+% we solved for a supercell containing eight unit cells.
+Vunit = [ 2799.265771  2820.427141 2846.019367 2705.547127 3002.491963 3066.745257]./8;
+figure(2);
+plot(CompositionIndex,Vunit,'b','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('supercell composition','FontSize',15)
+Ang3 = [char(197) char(179)]; ylabel(['unit cell volume [' Ang3 ']'],'FontSize',15)
+title('Unit cell volume V. supercell composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+
+The 0[K] mass density
+Density is mass divided by volume. The mass of a supercell for our studied cases. Each supercell contains 64 H2O molecules. The unit of the mass is gram [g]
+MassSuperCell = 64.*mH2O+[29 30 31 32 33 34].*mCO2;
+% Calculate the mass density [g cm^{-3}]
+% The factor 10^{-24} converts [Angstrom^3] to [cm^3]
+rho = MassSuperCell./(Vunit.*8.*10.^(-24)) ;
+figure(3);
+plot(CompositionIndex,rho,'b','LineWidth',1.5)
+hold on
+% This line plots the density of ice VI for easy comparison with our
+% studied structure of CO2H-III
+plot([1 6],[1.655 1.655],'r','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('supercell composition','FontSize',15)
+ylabel('\rho [ g cm^{-3} ]','FontSize',15)
+title('mass density V. supercell composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+
+Internal Energy per atom %%%%%%%%%%%%%%%%%%%%%
+% Number of atoms in our studied supercells for the six compositions 
+% we tested for the filled-ice CO2H-III.
+% NOTE: Each water molecule consists of three atoms. There are eight water 
+% molecules per unit cell, and our studied supercell has eight unit cells. 
+% Each CO2 molecule has three atoms. 
+Natom = 8.*3.*8 + [29 30 31 32 33 34].*3;
+% Internal energy [Ha] divided by the number of atoms. This really is
+% copy-paste of the energy from the output files, which is then divided by
+% Natom.
+Uatom = [-2201.572816879560833  -2239.376018538836433 -2277.179602811560017 -2315.088681530128270 -2352.745946181791169 -2390.586261996579196]./Natom;
+figure(4);
+plot(CompositionIndex,Uatom,'b','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('supercell composition','FontSize',15)
+ylabel('U [ Ha atom^{-1} ] ','FontSize',15)
+title(' Internal energy per atom V. composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+
+Enthalpy per atom %%%%%%%%%%%%%%%%%%%%%%%
+% We derive the enthalpy as H=U+PV. Clearly, the analysis from this point 
+% forward is for a given pressure. This needs to be changed if we analyze 
+% data for a different pressure level. 
+% For this set of data the pressure is 3[GPa] we convert the units to c.g.s 
+P = .8.*10.^10;   % Pressure in [dyn cm^{-2}]
+% The factor 10^{-24} converts the volume from [Angstrom^3] to [cm^3]
+Hatom = Uatom + (P.*Vunit.*8.*10.^(-24)).*ergtoHa./Natom;
+figure(5);
+plot(CompositionIndex,Hatom,'b','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('supercell composition','FontSize',15)
+ylabel('H [ Ha atom^{-1} ] ','FontSize',15)
+title(' Enthalpy per atom V. supercell composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+
+We also have to analyze the pure endmembers. In this case it is ice VII
+for pure water and phase I solid CO2 for the pure CO2 system.
+Enthalpy per CO2 molecule in pure phase I solid CO2 %%%%%%
+% Number of CO2 molecules in our studied phase I super cell. 
+% NOTE: look at subsys.inc and count carbons and the number of cells we 
+% have in our simulation.
+NCO2SuperCell = 4.*3.*3.*3;
+% Internal Energy [Ha] for the super cell
+UCO2SuperCell =  -4084.170271750407210;
+% Volume of the super cell [Angstrom^3]
+VCO2SuperCell = 4642.764635;
+% Internal energy per CO2 molecule [Ha] is:
+UCO2 = UCO2SuperCell./NCO2SuperCell;
+% Enthalpy per CO2 molecule [Ha] is:
+% The factor 10^{-24} converts the volume from [Angstrom^3] to [cm^3]
+HCO2 = UCO2 + (P.*VCO2SuperCell.*10.^(-24)).*ergtoHa./NCO2SuperCell;
+Enthalpy per H2O molecule in pure water ice VI %%%%%%
+% Number of H2O molecules in our studied ice VI super cell
+NVISuperCell = 80;
+% Internal Energy [Ha] for the super cell
+UVISuperCell = -1381.344613119837732;
+% Volume of the super cell [Angstrom^3]
+VVISuperCell = 1741.780658;
+% Internal energy per H2O molecule [Ha] is:
+UVI = UVISuperCell./NVISuperCell;
+% Enthalpy per H2O molecule [Ha] is:
+% The factor 10^{-24} converts the volume from [Angstrom^3] to [cm^3]
+HVI = UVI + (P.*VVISuperCell.*10.^(-24)).*ergtoHa./NVISuperCell;
+Enthalpy of mixing %%%%%%%%%%%%%%%%%%%%%%
+%%%%  Total enthalpy of mixing (i.e. formation) vector [Ha]
+m = 64; %number of H20 molecules in the super cell of the mixture
+CO2NumVec = [29 30 31 32 33 34]; %number of CO2 molecules in the supercell.
+Hmixvec = Hatom.*Natom - m.*HVI - CO2NumVec.*HCO2;
+Converting to molar enthalpy of mixing [kJ mol^{-1}]
+Hmixvecmol = Hmixvec.*HatokJ./(m+CO2NumVec).*NA;
+figure(6);
+% Define a compositional vector for the mole fraction of CO2 in the
+% filled-ice structure. This is for plotting purposes.
+XCO2 = CO2NumVec./(CO2NumVec+m);
+plot(XCO2,Hmixvecmol,'sb','LineWidth',1.5)
+hold on
+% We need a model that can interpolate the enthalpy of mixing between our 
+% studied compositions. We use a polynomial of second order. We believe 
+% this is valid, at least to some extent. 
+%we fit the data for the molar enthalpy of mixing to a polynomial (of order 2).
+%NOTE: I don't use here the entire array of XCO2 but only the region around 
+%the minimum value for the enthalpy of mixing (which is at XCO2(4) for this case).
+%ANANYA PLEASE MAKE SURE THAT XCO2(4) IS ALSO THE MINIMUM FOR THE 6GPA AND
+%9GPA PRESSURE LEVELS.
+polyHmix = polyfit([XCO2(3) XCO2(4) XCO2(5)],[Hmixvecmol(3) Hmixvecmol(4) Hmixvecmol(5)],2);
+% A vector defined here for plotting purposes
+X = XCO2(3):(XCO2(end)-XCO2(1))./100:XCO2(5);
+plot(X,Hmix(X,polyHmix),'r','LineWidth',1.5)
+ylabel('\Delta H_{mix} [ kJ mol^{-1} ]','FontSize',15)
+xlabel('X_{CO_2}','FontSize',15)
+title('Molar enthalpy of mixing V. composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           The Entropy of Mixing For An Ideal Solution:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We now derive the entropy of mixing for the different supercells we 
+% have solved for. We assume here a type of an ideal solution. 
+% Ideal mixing entropy for our studied supercells [kJ mol^{-1} K^{-1}]
+Smixvec = Smix(XCO2,kHa,HatokJ,m,NA);
+figure(7);
+% The factor 1000 is to transform units from kJ to J in order to help with
+% comparison with the literature
+plot(XCO2,Smixvec.*1000,'sb','LineWidth',1.5)
+hold on
+% Defining a composition vector for plotting purposes
+num = 0:0.1:60;
+X2 = num./(64+num);
+plot(X2,Smix(X2,kHa,HatokJ,m,NA).*1000,'r','LineWidth',1.0)
+ylabel('\Delta S_{mix} [ J K^{-1} mol^{-1} ]','FontSize',15)
+xlabel('X_{CO_2}','FontSize',15)
+title('Entropy of mixing V. composition')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%               The Mixing Free Energy                      %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We ran simulations at 0[K] and now we wish to correct (approximate) for 
+% room temperature.
+T = 300; % Setting the temperature to room temperature [K]
+% Molar free energy of mixing [kJ mol^{-1}]
+Gmixvec = Hmixvecmol-T.*Smixvec;
+%%%%%%%%%% Our reference for the endmembers CO2 and H2O    %%%%%%%
+% Our standards for the pure components are chosen at their stable state 
+% for the pressure of the solution. These are set to zero and thus the free 
+% energy of mixing the unmixed pure components is set to zero. 
+% Basiaclly, this relates to placing pure CO2 next to pure water and not 
+% allowing them to intimately mix to form filled-ice. 
+%  molar Free energy of un-mixed water and CO2 [kJ mol^{-1}] at standard
+%  state.
+Gunmixedvec = 0;
+figure(8);
+plot(XCO2,Gmixvec,'sb','LineWidth',1.5)
+hold on
+X3 = XCO2(3):(XCO2(end)-XCO2(1))./100:XCO2(5);
+plot(X3,Gmix(X3,polyHmix,kHa,T,HatokJ,m,NA),'r','LineWidth',1.5)
+plot(XCO2, Gunmixedvec ,'om','LineWidth',1.5)
+ylabel('\Delta G_{mix} [ kJ mol^{-1} ]')
+xlabel('X_{CO_2}')
+title('Molar free energy of mixing V. composition')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+
+return;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now we turn to build the algorithm that will automatically produce the
+% T-X phase diagram. This diagram gives the compositional information 
+% versus temperature. It tells us what composition thermodynamics allows 
+% for our studied mixture of CH4 and H2O when mixed to form a filled-ice.
+% That composition would appear between the red and blue lines
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% we solve for a series of temperatures [K] which we loop over
+Temp = 300:1:450;
+i = 1;
+while i <= length(Temp)
+    %The unmixed standard molar free energy is fixed at zero,
+    p1 = 0;
+    p2 = 0;
+    %The molar free energy of formation of filled-ice is fitted to a 
+    % quadratic equation around the minimum.
+    phelp2 = polyfit(X3,Gmix(X3,polyHmix,kHa,Temp(i),HatokJ,m,NA),2);
+    ap = phelp2(1);
+    bp = phelp2(2);
+    cp = phelp2(3);
+    XCH4root1(i) = sqrt((cp-p2)./ap);
+    XCH4root2(i) = 1-sqrt(1-1./ap.*(p1+p2-bp-cp));
+    
+    
+    clear stdCH4help;
+    clear p1;
+    clear p2;
+    clear phelp2;
+    clear ap;
+    clear bp;
+    clear cp;
+    
+    i = i+1;
+end
+figure(9);
+plot(XCH4root1,Temp,'r','LineWidth',1.5)
+hold on
+plot(XCH4root2,Temp,'b','LineWidth',1.5)
+xlabel('X_{CH_4}')
+ylabel('T [ K ]')
+title('T-X phase diagram')
+str = {'ice VII(s) + MH-III(s)','MH-III(s)','CH_4(s) + MH-III(s)'};
+%text([0.3272 0.3292 0.331],[350 350 350],str)
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+xlim([0.332 0.334])
