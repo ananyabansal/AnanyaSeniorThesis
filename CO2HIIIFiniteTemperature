@@ -1,0 +1,505 @@
+% Test on CO2 filled-ice Stability with NPT data
+k = 1.38.*10.^(-16);               %Boltzmann's constant [erg K^{-1}]
+NA = 6.0221409.*10.^23;            %Avogadro's number
+ergtoHa = 22937126887.7;           %Conversion of erg to Ha.
+Hatoerg = 4.359744650.*10.^(-11);  %Ha to erg
+HatoeV = 27.211386;                %Ha to eV
+HatokJ = 4.35974394220.*10.^(-21); %Ha to kJ
+kHa = k.*ergtoHa;                 %Boltzmann's constant [Ha K^{-1}]
+Mw = 18;         %Molar mass of water [g/mol].
+mH2O = Mw./NA;   %The mass of a water molecule [g].
+MCO2 = 44;       %Molar mass of CO2 [g/mol].
+mCO2 = MCO2./NA; %The mass of a CO2 molecule [g].
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%   CO2H-III solid analysis     %%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+composition = [1 2 3]; % We have studied three compositions for the filled-ice
+%%%%%%%%%%%%%%%%  Unit cell volume for the filled-ice (solid) component
+VFIunit = [2545.839 2532.708 2707.029]./8;
+VFIunitErr = [8.777077 1.855672 3.630135]./8;
+figure(1);
+errorbar(composition,VFIunit,VFIunitErr,'b','LineWidth',1.5)
+xticks([1 2 3])
+xticklabels({'31:64','32:64','33:64'})
+xlabel('supercell composition','FontSize',15)
+Ang3 = [char(197) char(179)]; ylabel(['unit cell volume [' Ang3 ']'],'FontSize',15)
+title('CO2H-III cell volume V. supercell composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%%%%%% Now we derive and plot the mass density for the
+%%%%%%%%%%%%%%%%% filled-iced
+%The mass of a supercell for our studied cases. Each supercell contains 64 
+%H2O molecules.
+MFIsupercell = 64.*mH2O+[31 32 33].*mCO2;
+rhoFI = MFIsupercell./(VFIunit.*8.*10.^(-24)) ;
+rhoFIErr = rhoFI.*(VFIunitErr./VFIunit);
+figure(2);
+errorbar(composition,rhoFI,rhoFIErr,'b','LineWidth',1.5)
+hold on
+plot([1 3],[1.655 1.655],'r','LineWidth',1.5)
+xticks([1 2 3])
+xticklabels({'31:64','32:64','33:64'})
+xlabel('supercell composition','FontSize',15)
+ylabel('\rho [ g cm^{-3} ]','FontSize',15)
+title('mass density V. supercell composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%    Internal Energy per atom      %%%%%%%%%%%%%%%%%%%%%
+%Number of atoms in our studied supercells, for the three compositions 
+%tested:
+Natom = 8.*3.*8 + [31 32 33].*3;
+UFI = [-2276.194 -2314.046 -2351.691]./Natom;
+UFIErr = [.01246840 .001369972 .003970634]./Natom;
+figure(3);
+errorbar(composition,UFI,UFIErr,'b','LineWidth',1.5)
+hold on
+xticks([1 2 3])
+xticklabels({'31:64','32:64','33:64'})
+xlabel('supercell composition','FontSize',15)
+ylabel('U [ Ha atom^{-1} ] ','FontSize',15)
+title(' CO2H-III internal energy per atom V. composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%%%%    Enthalpy per atom      %%%%%%%%%%%%%%%%%%%%%%%
+% We first derive the enthalpy as H=U+PV
+P = 3.0.*10.^10;   % NPT pressure in [dyn cm^{-2}]
+HFI = UFI + (P.*VFIunit.*8.*10.^(-24)).*ergtoHa./Natom;
+HFIErr = sqrt(UFIErr.^2 + (P.*VFIunitErr.*8.*10.^(-24).*ergtoHa./Natom).^2);
+figure(4);
+errorbar(composition,HFI,HFIErr,'b','LineWidth',1.5)
+xticks([1 2 3])
+xticklabels({'31:64','32:64','33:64'})
+xlabel('supercell composition','FontSize',15)
+ylabel('H [ Ha atom^{-1} ] ','FontSize',15)
+title(' CO2H-III enthalpy per atom V. supercell composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%      Enthalpy of mixing       %%%%%%%%%%%%%%%%%%%%%%
+%%%% We need a model that can extrapolate/interpolate the enthalpy of  
+%%%% mixing between/beyond our studied compositions. We believe this is 
+%%%% valid, at least to some extent. 
+%Supercell energy [Ha], and error, for solid CO2 at 420[K] and 3.0[GPa]
+UCO2solidsupercell = -4082.783;
+UCO2solidsupercellErr = .002098715;
+%Supercell volume [Angstrom^3], and error, for solid CO2 at 420[K] and 3.0[GPa]
+VCO2solidsupercell = 4459.455;
+VCO2solidsupercellErr = 2.49128;
+%Supercell enthalpy [Ha], and error, for solid CO2 at 420[K] and 3.0[GPa]
+HCO2solidsupercell = UCO2solidsupercell + (P.*VCO2solidsupercell.*10.^(-24)).*ergtoHa;
+HCO2solidsupercellErr = sqrt(UCO2solidsupercellErr.^2 + (P.*VCO2solidsupercellErr.*10.^(-24).*ergtoHa).^2);
+%Number of CO2 molecules in solid CO2 at 420[K] and 3.0[GPa]
+NCO2SolidMolec = 108;
+% Enthalpy [Ha] of pure solid CO2 for one molecule of CO2, 
+HCO2solid = HCO2solidsupercell./NCO2SolidMolec;
+delHCO2solid = HCO2solidsupercellErr./NCO2SolidMolec;
+%Supercell energy [Ha], and error, for ice VII at 420[K] and 3.0[GPa]
+UiceVIIsupercell = -931.8100;
+UiceVIIsupercellErr = .0005189297;
+%Supercell volume [Angstrom^3], and error, for ice VII at 420[K] and 3.0[GPa]
+ViceVIIsupercell = 1009.073;
+ViceVIIsupercellErr = .4074955;
+%Supercell enthalpy [Ha], and error, for ice VII at 420[K] and 3.0[GPa]
+HiceVIIsupercell = UiceVIIsupercell + (P.*ViceVIIsupercell.*10.^(-24)).*ergtoHa;
+HiceVIIsupercellErr = sqrt(UiceVIIsupercellErr.^2 + (P.*ViceVIIsupercellErr.*10.^(-24).*ergtoHa).^2);
+%Number of H2O molecules in our super cell of ice VII
+NH2OiceVIIMolec = 54;
+% Enthalpy [Ha] of ice VII for one molecule of H2O in pure ice VII at 420[K] 
+% and 3.0[GPa] from our NPT simulation.
+HVII = HiceVIIsupercell./NH2OiceVIIMolec; 
+delHVII = HiceVIIsupercellErr./NH2OiceVIIMolec;  %error in enthalpy [Ha]
+%%%%  Total enthalpy of mixing (i.e. formation) vector [Ha]
+m = 64; %number of H20 molecules in the super cell of the mixture
+CO2NumVec = [31 32 33]; %number of CO2 molecules in supercell.
+Hmixvec = HFI.*Natom - m.*HVII - CO2NumVec.*HCO2solid;
+%associated error;
+delHmixvec = sqrt((HFIErr.*Natom).^2 + m.^2.*delHVII.^2 + CO2NumVec.^2.*delHCO2solid.^2 );
+%% molar enthalpy of mixing [kJ mol^{-1}]
+Hmixvecmol = Hmixvec.*HatokJ./(m+CO2NumVec).*NA;
+delHmixvecmol = delHmixvec.*HatokJ./(m+CO2NumVec).*NA;
+figure(5);
+XCO2 = CO2NumVec./(CO2NumVec+m);
+errorbar(XCO2,Hmixvecmol,delHmixvecmol,'sb','LineWidth',1.5)
+hold on
+%we fit the data for the molar enthalpy of mixing to a polynomial (of order 2).
+polyHmix = polyfit(XCO2,Hmixvecmol,2);
+%polyHmix = polyfit(XO2,[Hmixvecmol(1)+delHmixvecmol(1) Hmixvecmol(2)+delHmixvecmol(2) Hmixvecmol(3)-delHmixvecmol(3) Hmixvecmol(4)-delHmixvecmol(4) Hmixvecmol(5)+delHmixvecmol(5) Hmixvecmol(6)+delHmixvecmol(6) ],2);
+X = XCO2(1):(XCO2(end)-XCO2(1))./100:XCO2(end);
+plot(X,Hmix(X,polyHmix),'r','LineWidth',1.5)
+ylabel('\Delta H_{mix} [ kJ mol^{-1} ]','FontSize',15)
+xlabel('X_{CO_2}','FontSize',15)
+title('CO2H-III molar enthalpy of mixing V. composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           the Entropy of mixing for an ideal solution:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We now derive the entropy of mixing for the supercell scenarios we 
+% have solved for. We assume here an ideal solution. 
+%we fit the data for the unit cell volume versus composition to a linear 
+%curve. However, we adopt a bimodal nature around the composition of 0.3333 
+polyVmix1 = polyfit(XCO2(1:2),VFIunit(1:2),1);
+polyVmix2 = polyfit(XCO2(2:3),VFIunit(2:3),1);
+figure(6);
+errorbar(XCO2,VFIunit,VFIunitErr,'b','LineWidth',1.5)
+hold on
+plot(XCO2(1:2),polyVmix1(1).*XCO2(1:2)+polyVmix1(2))
+plot(XCO2(2:3),polyVmix2(1).*XCO2(2:3)+polyVmix2(2))
+xlabel('X_{CO_2}','FontSize',15)
+Ang3 = [char(197) char(179)]; ylabel(['unit cell volume [' Ang3 ']'],'FontSize',15)
+title('Bimodal Nature Of Volume V. Composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+% Ideal mixing entropy for our studied supercells [kJ mol^{-1} K^{-1}]
+phi = 0.7050; %packing efficiency of ellipsoids
+Smixvec = Smix(XCO2,polyVmix1,polyVmix2,phi,kHa,HatokJ,m,NA);
+% Error in entropy [kJ mol^{-1} K^{-1}], derived here as the difference when
+% changing the packing efficency over two extremes.
+delSmixvec = abs(Smix(XCO2,polyVmix1,polyVmix2,0.64,kHa,HatokJ,m,NA) - Smix(XCO2,polyVmix1,polyVmix2,0.77,kHa,HatokJ,m,NA))./2 ;
+figure(7);
+% The factor 1000 is to transform units from kJ to J
+errorbar(XCO2,Smixvec.*1000,delSmixvec.*1000,'sb','LineWidth',1.5)
+hold on
+num = 31:1:160;
+X2 = num./(64+num);
+plot(X2,Smix(X2,polyVmix1,polyVmix2,0.64,kHa,HatokJ,m,NA).*1000,'r','LineWidth',1.0)
+hold on    
+plot(X2,Smix(X2,polyVmix1,polyVmix2,0.77,kHa,HatokJ,m,NA).*1000,'--r','LineWidth',1.0)
+ylabel('\Delta S_{mix} [ J K^{-1} mol^{-1} ]','FontSize',15)
+xlabel('X_{CO_2}','FontSize',15)
+title('CO2H-III molar entropy of mixing V. composition')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%               The mixing free energy                      %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+T = 420; %simulation temperature [K]
+% Molar free energy of mixing for the filled-ice [kJ mol^{-1}]
+Gmixvec = Hmixvecmol-T.*Smixvec;
+%associated error [kJ mol^{-1}]
+delGmixvec = sqrt(delHmixvecmol.^2+T.^2.*delSmixvec.^2);
+%%%%%%%%%%%%%%%%%%%% Our reference for CO2 and H2O    %%%%%%%
+% Our standards for the pure endmembers are chosen at their stable state 
+% for the P,T of the solution. These are set to zero and thus the free 
+% energy of mixing the unmixed pure components is set to zero. 
+%  molar Free energy of un-mixed water and CO2 [kJ mol^{-1}] at standard
+%  state.
+Gunmixedvec = 0;
+figure(8);
+errorbar(XCO2,Gmixvec,delGmixvec,'sb','LineWidth',1.5)
+hold on
+num2 = 31:0.1:34;
+X3 = num2./(64+num2);
+plot(X3,Gmix(X3,polyHmix,polyVmix1,polyVmix2,phi,kHa,T,HatokJ,m,NA),'r','LineWidth',1.5)
+plot(XCO2, Gunmixedvec ,'om','LineWidth',1.5)
+ylabel('\Delta G_{mix} [ kJ mol^{-1} ]')
+xlabel('X_{CO_2}')
+title('CO2H-III molar free energy of mixing V. composition')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+xlim([0.326 0.3403])
+return;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now we turn to build the algorithm that will automatically produce the
+% T-X phase diagram and all oxygen fugacity phase diagrams.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% we solve for a series of temperatures which we loop over
+Temp = 300:1:420;
+i = 1;
+while i <= length(Temp)
+    %O2 standard for 1bar and 300K. First term is the 0[K] electronic energy,
+    %second term is from 5 degrees of freedom that are active in room
+    %temperature for a diatomic molecule and the third term is the PV=kT which
+    %is the conversion to enthalpy. This standard is needed in order to convert 
+    %to fugacity of O2 in filled-ice. 
+    stdO2help = -32.199023372638493 + (5./2+1).*kHa.*Temp(i);
+    
+    %The unmixed molar free energy is fixed at zero,
+    p1 = 0;
+    p2 = 0;
+    %The molar free energy of formation of filled ice is fitted to a 
+    %quadratic equation,
+    phelp2 = polyfit(X3,Gmix(X3,polyHmix,polyVmix,phi,kHa,Temp(i),HatokJ,m,NA),2);
+    a = phelp2(1);
+    b = phelp2(2);
+    c = phelp2(3);
+    XO2root1(i) = sqrt((c-p2)./a);
+    XO2root2(i) = 1-sqrt(1-1./a.*(p1+p2-b-c));
+    
+    % This part calculates the natural log of the fugacity of O2  
+    logfO2root1(i) = lnfO2(XO2root1(i),Temp(i),Hmixvec,O2NumVec,m,kHa,HO2fluid,stdO2help,polyVmix,phi);
+    logfO2root2(i) = lnfO2(XO2root2(i),Temp(i),Hmixvec,O2NumVec,m,kHa,HO2fluid,stdO2help,polyVmix,phi);
+    
+    
+    clear stdO2help;
+    clear p1;
+    clear p2;
+    clear phelp2;
+    clear a;
+    clear b;
+    clear c;
+    
+    i = i+1;
+end
+figure(9);
+plot(XO2root1,Temp,'r','LineWidth',1.5)
+hold on
+plot(XO2root2,Temp,'b','LineWidth',1.5)
+xlabel('X_{O_2}')
+ylabel('T [ K ]')
+title('T-X phase diagram')
+str = {'ice VII(s) + O2H-III(s)','O2H-III(s)','O_2(fl) + O2H-III(s)'};
+text([0.324 0.3328 0.340],[350 350 350],str)
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+xlim([0.323 0.346])
+ 
+figure(10);
+plot(Temp,logfO2root1.*0.4343,'r','LineWidth',1.5)
+hold on
+plot(Temp,logfO2root2.*0.4343,'b','LineWidth',1.5)
+%%%%%% Oxygen Fugacity Fits for Individual Meteoritic Materials as a 
+%%%%%% Function of Temperature taken from The Astrophysical Journal, 
+%%%%%% 843:120 (18pp), 2017 July 10 Schaefer & Fegley
+a1 = 2.4976; b1 = -9.8605; c1 = -17.0701; d1 = 7.5220; f1 = -1.0404; %CI 
+plot(Temp, a1 + b1.*1000./Temp + c1.*10.^6./Temp.^2 + d1.*10.^9./Temp.^3 + f1.*10.^(12)./Temp.^4,'--b','LineWidth',0.8)
+text(310,a1 + b1.*1000./310 + c1.*10.^6./310.^2 + d1.*10.^9./310.^3 + f1.*10.^(12)./310.^4,'CI')
+a1 = 9.0621; b1 = -31.193; c1 = 5.1092; d1 = -1.8475; f1 = 0.2000; %CV 
+plot(Temp, a1 + b1.*1000./Temp + c1.*10.^6./Temp.^2 + d1.*10.^9./Temp.^3 + f1.*10.^(12)./Temp.^4,'--r','LineWidth',0.8)
+text(315,a1 + b1.*1000./315 + c1.*10.^6./315.^2 + d1.*10.^9./315.^3 + f1.*10.^(12)./315.^4,'CV')
+a1 = 5.0743; b1 = -22.906; c1 = -5.6610; d1 = 2.0634; f1 = -0.2618; %H 
+plot(Temp, a1 + b1.*1000./Temp + c1.*10.^6./Temp.^2 + d1.*10.^9./Temp.^3 + f1.*10.^(12)./Temp.^4,'--g','LineWidth',0.8)
+text(320,a1 + b1.*1000./320 + c1.*10.^6./320.^2 + d1.*10.^9./320.^3 + f1.*10.^(12)./320.^4,'H')
+a1 = 4.9495; b1 = -24.024; c1 = -4.6236; d1 = 1.7177; f1 = -0.2332; %EH 
+plot(Temp, a1 + b1.*1000./Temp + c1.*10.^6./Temp.^2 + d1.*10.^9./Temp.^3 + f1.*10.^(12)./Temp.^4,'--k','LineWidth',0.8)
+text(325,a1 + b1.*1000./325 + c1.*10.^6./325.^2 + d1.*10.^9./325.^3 + f1.*10.^(12)./325.^4,'EH')
+a1 = 5.4856; b1 = -25.127; c1 = -3.6580; d1 = 1.3014; f1 = -0.1650; %Eucrite 
+plot(Temp, a1 + b1.*1000./Temp + c1.*10.^6./Temp.^2 + d1.*10.^9./Temp.^3 + f1.*10.^(12)./Temp.^4,'--m','LineWidth',0.8)
+text(330,a1 + b1.*1000./330 + c1.*10.^6./330.^2 + d1.*10.^9./330.^3 + f1.*10.^(12)./330.^4,'Eucrite')
+%Iron-magnetite buffer
+plot(Temp,16.2052-29493./Temp-2.4174.*log10(Temp)+0.0607./Temp.*(3.*10.^4-1),'-.c','LineWidth',0.8)
+text(335,16.2052-29493./335-2.4174.*log10(335)+0.0607./335.*(3.*10.^4-1),'IM')
+%QFM
+plot(Temp,82.75+0.00484.*Temp-30681./Temp-24.45.*log10(Temp)+940.*3.5./Temp-0.02.*3.5,'-.r','LineWidth',0.8)
+text(340,82.75+0.00484.*340-30681./340-24.45.*log10(340)+940.*3.5./340-0.02.*3.5,'QFM')
+xlabel('T [ K ]')
+ylabel(' log_{10} ( f_{O2} [ bar ] ) ')
+title('f_{O2}-T phase diagram')
+str = {'ice VII(s) + O2H-III(s)','O2H-III(s)','O_2(fl) + O2H-III(s)'};
+text([360 360 360],[-30 8 15],str)
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+figure(11);
+plot(XO2root1,logfO2root1.*0.4343,'r','LineWidth',1.5)
+hold on
+plot(XO2root2,logfO2root2.*0.4343,'b','LineWidth',1.5)
+xlabel('X_{O_2}')
+ylabel(' log_{10} ( f_{O2} [ bar ] ) ')
+title('f_{O_2}-X_{O_2} phase diagram')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+xlim([0.31 0.36])
+%Now we plot the chemical potential of O2 in the filled-ice [Ha molec^{-1}]  
+figure(12);
+T = 350;
+plot(X,ChemPotO2(X,T,Hmixvec,O2NumVec,m,kHa,HO2fluid,polyVmix,phi),'-b','LineWidth',1.5)
+hold on
+T = 400;
+plot(X,ChemPotO2(X,T,Hmixvec,O2NumVec,m,kHa,HO2fluid,polyVmix,phi),'-r','LineWidth',1.5)
+T = 450;
+plot(X,ChemPotO2(X,T,Hmixvec,O2NumVec,m,kHa,HO2fluid,polyVmix,phi),'-g','LineWidth',1.5)
+% NO2 = 64.*X./(1-X)
+xlabel('X_{O_2}')
+ylabel('\mu_{O_2}^{FI} [ Ha molec^{-1} ]')
+legend('T = 350 [ K ]','T = 400 [ K ]','T = 450 [ K ]')
+title('O_2 chemical potential V. molar fraction in O2H-III')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%   The fluid analysis     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% We begin by deriving the density for liquid water at the simulation T-P
+% The supercell volume of liquid water [angstrom^3] at T=450[K] and
+% P=3.5[GPa]
+VsupercellLiqH2O = 1.433682e+03;
+VsupercellLiqH2OErr = 1.866192e+00;
+% The super cell consists of 64 water molecules, thus its mass in [g] is,
+MsupercellLiqH2O = 64.*mH2O;
+% The derived density, and error, for liquid water [g cm^{-3}],
+rhoLiqH2O = MsupercellLiqH2O./(VsupercellLiqH2O.*10.^(-24)) 
+rhoLiqH2OErr = rhoLiqH2O.*(VsupercellLiqH2OErr./VsupercellLiqH2O)
+%Our derived density is in agreement with  J. Chem. Phys. 130, 124514 (2009); https://doi.org/10.1063/1.3100771
+% and we can continue to analyze our data.
+%%%%%  Volume, and error, for the liquid solution cell [angstrom^3] %%%%%%%
+VcellLiqSol = [2.293041e+03 2.321130e+03 2.354369e+03 2.384721e+03 2.404364e+03 2.442351e+03];
+VcellLiqSolErr = [3.557509e+00 2.403855e+00 1.786510e+00 4.028453e+00 1.978344e+00 1.833797e+00];
+figure(13);
+errorbar(comptriplet,VcellLiqSol,VcellLiqSolErr,'b','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('liquid composition','FontSize',15)
+Ang3 = [char(197) char(179)]; ylabel(['cell volume [' Ang3 ']'],'FontSize',15)
+title('liquid volume V. solution composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%  Energy, and error, for the liquid solution cell [Ha] %%%%%%%
+EcellLiqSol = [-2.047557e+03 -2.079765e+03 -2.111957e+03 -2.144143e+03 -2.176352e+03 -2.208533e+03];
+EcellLiqSolErr = [4.229204e-03 7.194514e-03 5.443484e-03 7.262693e-03 8.426359e-03 4.180500e-03];
+figure(14);
+errorbar(comptriplet,EcellLiqSol./Natomtriplet,EcellLiqSolErr./Natomtriplet,'b','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('liquid composition','FontSize',15)
+ylabel('U [ Ha atom^{-1} ]')
+title('liquid internal energy V. solution composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%%    Enthalpy per atom for the liquid solution   %%%%%%%%%%%%%%
+% We first derive the enthalpy as H=U+PV
+P = 3.5.*10.^10;   % NPT pressure in [dyn cm^{-2}]
+%Enthalpy and error for the entire cell (not per atom)
+HcellLiqSol = EcellLiqSol + (P.*VcellLiqSol.*10.^(-24)).*ergtoHa; 
+HcellLiqSolErr = sqrt(EcellLiqSolErr.^2 + (P.*VcellLiqSolErr.*10.^(-24).*ergtoHa).^2);
+figure(15);
+errorbar(comptriplet,HcellLiqSol./Natomtriplet,HcellLiqSolErr./Natomtriplet,'b','LineWidth',1.5)
+xticks([1 2 3 4 5 6])
+xticklabels({'29:64','30:64','31:64','32:64','33:64','34:64'})
+xlabel('liquid composition','FontSize',15)
+ylabel('H [ Ha atom^{-1} ] ','FontSize',15)
+title(' liquid enthalpy V. solution composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%%%%%%%%%    Enthalpy of mixing for the liquid solution     %%%%%%%%%%%%
+%%%% We need a model that can extrapolate/interpolate the enthalpy of  
+%%%% mixing between/beyond our studied compositions for the liquid solution. 
+%%%% We believe this is valid, at least to some extent. 
+%Cell internal energy [Ha], and error, for liquid water at 450[K] and 3.5[GPa]
+UliqH2Ocell = -1.114017e+03;
+UliqH2OcellErr = 5.970565e-03;
+%cell enthalpy [Ha], and error, for pure liquid water at 450[K] and 3.5[GPa]
+HliqH2Ocell = UliqH2Ocell + (P.*VsupercellLiqH2O.*10.^(-24)).*ergtoHa;
+HliqH2OcellErr = sqrt(UliqH2OcellErr.^2 + (P.*VsupercellLiqH2OErr.*10.^(-24).*ergtoHa).^2);
+%Number of H2O molecules in our pure water liquid cell,
+NH2OwaterliqMolec = 64;
+% Enthalpy [Ha] of pure liquid water for one molecule of H2O at 450[K] 
+% and 3.5[GPa] from our NPT simulation.
+HliqH2O = HliqH2Ocell./NH2OwaterliqMolec
+delHliqH2O = HliqH2OcellErr./NH2OwaterliqMolec  %error in enthalpy [Ha]
+%%%%  Total enthalpy of mixing (i.e. formation) vector [Ha]
+m = 64; %number of H20 molecules in the liquid cell of the mixture
+O2NumVec = [29 30 31 32 33 34]; %number of O2 molecules in the liquid cells.
+Hliqmixvec = HcellLiqSol - m.*HliqH2O - O2NumVec.*HO2fluid;
+%associated error;
+delHliqmixvec = sqrt(HcellLiqSolErr.^2 + m.^2.*delHliqH2O.^2 + O2NumVec.^2.*delHO2fluid.^2 );
+%% molar enthalpy of mixing [kJ mol^{-1}] for the liquid solution
+Hliqmixvecmol = Hliqmixvec.*HatokJ./(m+O2NumVec).*NA;
+delHliqmixvecmol = delHliqmixvec.*HatokJ./(m+O2NumVec).*NA;
+figure(16);
+XO2 = O2NumVec./(O2NumVec+m);
+errorbar(XO2,Hliqmixvecmol,delHliqmixvecmol,'sb','LineWidth',1.5)
+hold on
+%we fit the data for the molar enthalpy of mixing to a polynomial (of order 2).
+%polyHmix = polyfit(XO2,Hmixvecmol,2);
+%polyHmix = polyfit(XO2,[Hmixvecmol(1)+delHmixvecmol(1) Hmixvecmol(2)+delHmixvecmol(2) Hmixvecmol(3)-delHmixvecmol(3) Hmixvecmol(4)-delHmixvecmol(4) Hmixvecmol(5)+delHmixvecmol(5) Hmixvecmol(6)+delHmixvecmol(6) ],2);
+%X = XO2(1):(XO2(end)-XO2(1))./100:XO2(end);
+%plot(X,Hmix(X,polyHmix),'r','LineWidth',1.5)
+ylabel('\Delta H_{mix} [ kJ mol^{-1} ]','FontSize',15)
+xlabel('X_{O_2}','FontSize',15)
+title('Molar enthalpy of mixing in liquid V. composition')
+H=gca;
+H.LineWidth=1;
+H.FontSize=15;
+%%%%% The entropy of mixing for the liquid solution, here assumed ideal,
+figure(17);
+% The factor 1000 is to transform units from kJ to J
+plot(XO2,SmixLiq(XO2,kHa,HatokJ,NA).*1000,'sb','LineWidth',1.5)
+hold on
+numl = 0:1:300;
+X2l = numl./(64+numl);
+plot(X2l,SmixLiq(X2l,kHa,HatokJ,NA).*1000,'r','LineWidth',1.0)
+ylabel('\Delta S_{mix} [ J K^{-1} mol^{-1} ]','FontSize',15)
+xlabel('X_{O_2}','FontSize',15)
+title('Molar entropy of mixing for liquid V. composition')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%      The mixing free energy for the liquid solution       %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+T = 450; %simulation temperature [K]
+% Molar free energy of mixing for the liquid solution [kJ mol^{-1}]
+Gliqmixvec = Hliqmixvecmol-T.*SmixLiq(XO2,kHa,HatokJ,NA);
+%associated error [kJ mol^{-1}]
+delGliqmixvec = sqrt(delHliqmixvecmol.^2);
+%%%%%%%%%%%%%%%%%%%% Our reference for O2 and H2O    %%%%%%%
+% Our standards for the pure components are chosen at their stable state 
+% for the P,T of the solution. These are set to zero and thus the free 
+% energy of mixing the unmixed pure components is set to zero. 
+%  molar Free energy of un-mixed water and O2 [kJ mol^{-1}] at standard
+%  state.
+%Gunmixedvec = 0;
+figure(18);
+errorbar(XO2,Gliqmixvec,delGliqmixvec,'sb','LineWidth',1.5)
+%hold on
+%num2l = 28:1:37;
+%X3l = num2l./(64+num2l);
+%plot(X3l,Gmix(X3,polyHmix,polyVmix,phi,kHa,T,HatokJ,m,NA),'r','LineWidth',1.5)
+%plot(XO2, Gunmixedvec ,'om','LineWidth',1.5)
+ylabel('\Delta G_{mix} [ kJ mol^{-1} ]')
+xlabel('X_{O_2}')
+title('Molar free energy of mixing of liquid V. composition')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+%%%%%  Now we plot the chemical potential of O2 in the liquid solution [Ha molec^{-1}]
+%the total entropy of mixing for the liquid solution [Ha K^{-1}] 
+Smixliqtot = -kHa.*(m.*log(m./(m+O2NumVec))+O2NumVec.*log(O2NumVec./(m+O2NumVec))); 
+figure(19);
+T = 350;
+plot(X,ChemPotO2Liq(X,T,Hliqmixvec,Smixliqtot,O2NumVec,m,HO2fluid),'-b','LineWidth',1.5)
+hold on
+T = 400;
+plot(X,ChemPotO2Liq(X,T,Hliqmixvec,Smixliqtot,O2NumVec,m,HO2fluid),'-r','LineWidth',1.5)
+T = 450;
+plot(X,ChemPotO2Liq(X,T,Hliqmixvec,Smixliqtot,O2NumVec,m,HO2fluid),'-g','LineWidth',1.5)
+% NO2 = 64.*X./(1-X)
+xlabel('X_{O_2}')
+ylabel('\mu_{O_2}^{aq} [ Ha molec^{-1} ]')
+legend('T = 350 [ K ]','T = 400 [ K ]','T = 450 [ K ]')
+title('O_2 chemical potential in liquid V. molar fraction')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Now we estimate the partitioning coefficient for O2 between the
+%% filled-ice and liquid solution.
+figure(20);
+T = 450; % simulation temperature on the melting curve [K]
+plot(X,PartitioningCoeff(X,T,Hmixvec,Hliqmixvec,Smixliqtot,O2NumVec,m,kHa,polyVmix,phi),'-r','LineWidth',1.5)
+hold on
+%error vector [ Ha molec^{-1} ],
+errorvec = ones(1,length(X)).*0.013;
+shadedErrorBar(X,PartitioningCoeff(X,T,Hmixvec,Hliqmixvec,Smixliqtot,O2NumVec,m,kHa,polyVmix,phi),errorvec,{'r--','markerfacecolor','r'},0.1)
+% a guide to the eye
+plot([X(1) X(end)],[0 0],'-.b')
+xlabel('X_{O_2}(aq)')
+ylabel('\mu_{O_2}^{FI}-\mu_{O_2}^{aq} [ Ha molec^{-1} ]')
+legend('T = 450 [ K ]')
+title('O_2 partitioning coefficient')
+H=gca;
+H.LineWidth=1; %change to the desired value 
+H.FontSize=15;
